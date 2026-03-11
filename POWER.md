@@ -11,7 +11,7 @@ Before proceeding, validate that the user has completed the following steps:
 
 ## Step 1
 
-Prompt the user to configure their own Aikido API key for authentication. They can get Aikido API key at [app.aikido.dev](https://app.aikido.dev) → Settings → Integrations → IDE Plugins.
+Prompt the user to configure their own Aikido API key for authentication. They can get Aikido API key at [app.aikido.dev](https://app.aikido.dev/settings/integrations/ide/kiro) → Settings → Integrations → IDE Plugins.
 Once they have their API key they can set it as an environment variable named AIKIDO_API_KEY on their system, or hardcode it directly into the user level MCP configuration file (usually at ~/.kiro/settings/mcp.json) in the power section. Guide the user on how to do this.
 
 ## Step 2
