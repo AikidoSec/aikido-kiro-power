@@ -19,7 +19,6 @@ Brings [Aikido Security](https://aikido.dev) scanning directly into [Kiro](https
 
 See [Kiro Docs](https://kiro.dev/docs/powers/installation/) for detailed instructions on how to setup Kiro Powers.
 
-
 ### 2. Get your API key
 
 Go to [app.aikido.dev](https://app.aikido.dev) → **Settings** → **Integrations** → **IDE Plugins** and copy your API key.
@@ -38,12 +37,12 @@ Add this to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.) to make it perman
 
 Open `~/.kiro/settings/mcp.json` and set the key directly in the `power` section.
 
-
 ## Usage
 
-Once installed, Kiro can be prompted to scan files for security issues and resolove them. When vulnerabilities are found, Kiro will explain each issue and apply fixes guided by Aikido's remediation advice.
+Once installed, Kiro can be prompted to scan files for security issues and resolve them. When vulnerabilities are found, Kiro will explain each issue and apply fixes guided by Aikido's remediation advice. A hook will be added as well that triggers Kiro to run Aikido scans after it has made changes to or added code.
 
 Examples:
 
 > "Scan file.js for security vulnerabilities"
 > "Scan my changed files for security vulnerabilities"
+
