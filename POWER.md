@@ -85,3 +85,11 @@ When scanning the code for security vulnerabilities using the Aikido MCP server:
    - After applying all fixes, run **aikido_full_scan** again to verify that the issues were resolved and no new issues were introduced.
    - **Stopping the loop:** If you can explain why the applied fix is safe (e.g. the fix correctly addresses the finding and the remaining scan output is a false positive or acceptable), you may stop and report to the user. Otherwise, repeat the fix-and-rescan cycle up to 3 attempts; if issues remain after that, report them to the user instead of continuing.
 5. Report the final scan result to the user — confirm all clear or list any unresolved issues with explanation.
+
+## License and support
+
+This power integrates with [Aikido MCP Server](https://www.npmjs.com/package/@aikidosec/mcp).
+- [Privacy Policy](https://www.aikido.dev/policies/privacy)
+- [Support](support@aikido.dev)
+- License: MIT
+
