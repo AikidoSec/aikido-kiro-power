@@ -2,7 +2,7 @@
 name: "aikido-security-scan"
 displayName: "Scan code with Aikido Security"
 description: "Brings Aikido Security scanning directly into Kiro. Detects SAST vulnerabilities, exposed secrets, and IaC misconfigurations in code you write or modify, and guides Kiro to fix them before they ship."
-keywords: ["aikido", "security", "iac", "sast", "secrets", "scan", "vulnerabilities", "scan", "issues", "code", "file", "write", "generate"]
+keywords: ["aikido", "security", "iac", "sast", "secrets", "vulnerabilities", "scan", "issues", "code", "file", "write", "generate"]
 author: Aikido Security
 ---
 
@@ -11,12 +11,12 @@ Before proceeding, validate that the user has completed the following steps:
 
 ## Step 1
 
-Prompt the user to configure their own Aikido API key for authentication. They can get Aikido API key at [app.aikido.dev](https://app.aikido.dev/settings/integrations/ide/kiro) → Settings → Integrations → IDE Plugins.
+Prompt the user to configure their own Aikido API key for authentication. They can get an Aikido API key at [app.aikido.dev](https://app.aikido.dev/settings/integrations/ide/kiro) → Settings → Integrations → IDE Plugins.
 Once they have their API key they can set it as an environment variable named AIKIDO_API_KEY on their system, or hardcode it directly into the user level MCP configuration file (usually at ~/.kiro/settings/mcp.json) in the power section. Guide the user on how to do this.
 
 ## Step 2
 
-Validate user has Node.js 18+, required to run the Aikido MCP server
+Validate user has Node.js 18+, required to run the Aikido MCP server.
 
 ## Step 3
 
@@ -29,7 +29,7 @@ Verify the MCP server is reachable and the API key is valid by calling **aikido_
   - Offer to re-run this verification after they have restarted.
 
 ## Step 4
-Add a hook to `.kiro/hooks/aikido-scan-on-write.kiro.hook`
+Add the following hook to `.kiro/hooks/aikido-scan-on-write.kiro.hook`
 
 \`\`\`json
 {
