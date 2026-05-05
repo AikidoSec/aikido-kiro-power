@@ -26,6 +26,12 @@ You must call the Aikido issue-listing tool whenever an issue list is needed:
 
 Do not run local linters, formatters, or security scanners to approximate this result when the Aikido tool can provide it.
 
+# Pagination behavior
+
+- Treat issue-listing tool results as paginated.
+- Get only the first page by default.
+- Fetch additional pages only if the user needs more results.
+
 # Build inputs automatically
 
 The agent must derive repository metadata automatically:
