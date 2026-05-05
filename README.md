@@ -1,12 +1,14 @@
-# Aikido Security — Kiro Power
+# Aikido Security - Kiro Powers
 
-Brings [Aikido Security](https://aikido.dev) scanning directly into [Kiro](https://kiro.dev). Detects SAST vulnerabilities, exposed secrets, and IaC misconfigurations in code you write or modify, and guides Kiro to fix them before you ship.
+Brings [Aikido Security](https://aikido.dev) directly into [Kiro](https://kiro.dev) with two powers: one scans code for SAST vulnerabilities, exposed secrets, and IaC misconfigurations and helps fix them, while the other lists and triages Aikido issues for a repository or selected files.
 
 ## What it does
 
-- **SAST** — Static analysis to catch common vulnerability patterns
-- **Secrets detection** — Finds exposed API keys, tokens, and credentials
-- **IaC scanning** — Detects misconfigurations in infrastructure-as-code files
+- `power-aikido-security-scan`
+    - **SAST** — Static analysis to catch common vulnerability patterns
+    - **Secrets detection** — Finds exposed API keys, tokens, and credentials
+    - **IaC scanning** — Detects misconfigurations in infrastructure-as-code files
+- `power-aikido-list-issues` - List, count, and summarize Aikido issues for a repository or selected files.
 
 ## Prerequisites
 
@@ -39,10 +41,19 @@ Open `~/.kiro/settings/mcp.json` and set the key directly in the `power` section
 
 ## Usage
 
-Once installed, Kiro can be prompted to scan files for security issues and resolve them. When vulnerabilities are found, Kiro will explain each issue and apply fixes guided by Aikido's remediation advice. A hook will be added as well that triggers Kiro to run Aikido scans after it has made changes to or added code.
+Once installed, Kiro can be prompted to scan or list files for security issues and resolve them. When vulnerabilities are found, Kiro will explain each issue and apply fixes guided by Aikido's remediation advice. A hook will be added as well that triggers Kiro to run Aikido scans after it has made changes to or added code.
 
-Examples:
+### Security scan power
+
+Use prompts like:
 
 > "Scan file.js for security vulnerabilities"
 > "Scan my changed files for security vulnerabilities"
+
+### Issue listing power
+
+Use prompts like:
+
+> "List Aikido issues in this repository"
+> "Show high severity issues in src/auth.js"
 
