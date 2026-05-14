@@ -1,80 +1,106 @@
 ---
 name: "aikido-list-issues"
 displayName: "List Aikido Issues"
-description: "Fetches the authoritative list of autofixable Aikido issues for the current repository or selected files."
-keywords: ["aikido", "issues", "security", "triage", "autofix", "vulnerabilities", "secrets", "list", "count", "summarize"]
-author: "Aikido Security"
+description: "Fetches security issues from the Aikido feed so you can list, count, summarize, triage, or plan fixes—with optional scope by cloud, repository, VM, domain, or container."
+keywords: ["aikido", "issues", "feed", "security", "triage", "vulnerabilities", "secrets", "list", "count", "summarize", "cloud", "repository", "vm", "domain", "container"]
+author: Aikido Security
 ---
 
 # Purpose
 
-Use this power when the user asks to list, count, summarize, triage, or fix Aikido security issues.
+Use this power when the user asks to list, show, count, or summarize **Aikido security issues from the Aikido feed**, or when you need the current issue set before remediation.
 
-# Mandatory routing rule
+# Onboarding
 
-- If the Aikido MCP server is available, always use Aikido MCP tools for issue detection, triage, and autofix planning.
-- Do not use ad-hoc or manual static analysis as the primary source when Aikido MCP is available.
-- Do not invent, guess, or synthesize an Aikido issue list from memory, chat context, or local scanning.
-- If the user provides a handwritten or model-generated issue list, replace it with the authoritative Aikido list by calling Aikido MCP tools before proposing fixes.
+Before proceeding, validate that the user has completed the following steps:
 
-# Required tool invocation
+## Step 1
 
-You must call the Aikido issue-listing tool whenever an issue list is needed:
+Prompt the user to configure their own Aikido API key for authentication. They can get an Aikido API key at [app.aikido.dev](https://app.aikido.dev/settings/integrations/ide/kiro) -> Settings -> Integrations -> IDE Plugins.
+Once they have their API key they can set it as an environment variable named AIKIDO_API_KEY on their system, or hardcode it directly into the user level MCP configuration file (usually at ~/.kiro/settings/mcp.json) in the power section. Guide the user on how to do this.
 
-- The user asks to list, show, count, or summarize Aikido security issues for a repository or files.
-- You are about to triage or fix issues and need the current issue set for repository or file scope.
+## Step 2
 
-Do not run local linters, formatters, or security scanners to approximate this result when the Aikido tool can provide it.
+Validate user has Node.js 18+, required to run the Aikido MCP server.
 
-# Pagination behavior
+## Step 3
 
-- Treat issue-listing tool results as paginated.
-- Get only the first page by default.
-- Fetch additional pages only if the user needs more results.
+Verify the MCP server is reachable and the API key is valid by calling **aikido_full_scan** with a minimal test payload: one file with path `test.js` and content `// test`.
 
-# Build inputs automatically
+- If it responds successfully, confirm to the user that the Aikido plugin is configured and ready to use.
+- If it fails or is unavailable, guide the user through fixing the setup:
+  - Check that `AIKIDO_API_KEY` is correctly set (environment variable or in `~/.kiro/settings/mcp.json`).
+  - Ask the user to restart Kiro so the MCP server picks up the new key.
+  - Offer to re-run this verification after they have restarted.
 
-The agent must derive repository metadata automatically:
+## Step 4
+Add the following hook to `.kiro/hooks/aikido-scan-on-write.kiro.hook`
 
-1. Run git in the user's workspace.
-2. Derive owner/repo from the git remote URL.
-3. Pass both:
-   - `repository_url`
-   - `repository_name`
-4. Do not ask the user for either value.
+```json
+{
+  "enabled": true,
+  "name": "Aikido Scan on Write",
+  "description": "Runs an Aikido security scan after any file is written or modified",
+  "version": "1",
+  "when": {
+    "type": "postToolUse",
+    "toolTypes": [
+      "write"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file was just written or modified. Activate the aikido-kiro-power and run aikido_full_scan on all files that were created or modified in this session. Fix any findings and rescan to verify."
+  }
+}
+```
 
-Set scope inputs as follows:
+# Available MCP Tools
 
-- File-scoped requests: pass `file_paths` as Unix-style paths relative to repository root.
-- Severity-scoped requests: pass `severities` as an array of severity labels.
-- If the user specifies an issue type, pass `issue_type`.
-- If the user mentions "secrets", pass `issue_type` as `leaked_secret`.
+The **Aikido MCP Server** exposes the following tool for feed issues:
 
-# User intent mapping
+| Tool | Description |
+|------|-------------|
+| `aikido_issues_list` | Fetches security issues from the Aikido feed. Supports scoping and pagination. |
 
-- If the user references files (including @-mentions, quoted paths, or filenames), include them in `file_paths`.
-- Prefer repository-relative paths. If the relative path is unknown, pass the filename.
-- If the user requests specific severities, include them in `severities`.
+# Listing feed issues
 
-# Output requirements
+When the user wants to list, count, or summarize **Aikido feed** issues (or needs that set before remediation), follow this flow:
 
-Present each issue in this exact format:
+1. Call **`aikido_issues_list`** when they ask for feed issues or scope by cloud, repo, VM, domain, or container—pass only parameters that match their intent.
+2. **Optional filters** (omit what does not apply):
 
-- `<rule> - <rule_id> (line: <start_line>)`
+| Input | When |
+|-------|------|
+| `repo_name` | Repository / “this repo” / SCM |
+| `cloud_name` | Named cloud |
+| `vm_name` | VM or instance |
+| `domain_name` | Domain |
+| `container_name` | Container image |
+| `issue_types` | Specific categories (see below) |
 
-Also always report:
+3. **`issue_types`:** `open_source`, `leaked_secret`, `cloud`, `sast`, `iac`, `surface_monitoring`, `malware`, `eol`, `mobile`, `docker_container`, `cloud_instance`, `scm_security`, `license`, `ai_pentest`. If they mention **secrets**, include `leaked_secret`.
+4. **Pagination:** Default to the first page only; use `page` for more when they need it.
+5. **Per-issue output** (keep remediation text from the tool):
 
-- Total number of issues found per file.
-- The start line for each issue.
+```
+Issue #<n>: <issue_title>
+ - Issue type: <issue_type>
+ - Severity: <issue_severity>
+ - Remediation: <issue_remediation>
+```
 
-# Remediation handoff
+6. **Totals:** Report how many issues were returned; if multiple scopes in one ask, break down per scope.
+7. **Remediation:** Treat **`issue_remediation`** (and related fields) as verbatim source of truth for follow-up fixes.
+8. **MCP unavailable:** Tell them:
 
-- Preserve `issue_remediation` from the tool response.
-- Use `issue_remediation` as the remediation source for follow-up fix workflows or instructions.
-
-# If Aikido MCP is unavailable
-
-If the Aikido MCP server is unavailable or fails, tell the user:
-
-> The Aikido MCP server is required to fetch authoritative Aikido issues, but it is currently unavailable.
+> The Aikido MCP server is required to fetch authoritative Aikido feed issues, but it is currently unavailable.
 > Run `/aikido:setup` to install or verify setup, then retry.
+
+## License and support
+
+This power integrates with [Aikido MCP Server](https://www.npmjs.com/package/@aikidosec/mcp).
+
+- [Privacy Policy](https://www.aikido.dev/policies/privacy)
+- [Support](support@aikido.dev)
+- License: MIT
