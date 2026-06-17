@@ -61,7 +61,7 @@ The **Aikido MCP Server** provides the following tools:
 |------|---------|
 | `aikido_login` | Signs the user in through a browser-based flow and caches the auth token. Idempotent — returns "Already signed in" when a valid token exists. Pass `force_reauth: true` to switch accounts or re-authenticate. |
 | `aikido_full_scan` | Runs an Aikido SAST, IaC and Secrets scan locally on provided code files. |
-| `aikido_issues_list` | Lists, counts, and summarizes security issues from the Aikido security feed for the connected workspace — including open source (SCA), leaked secrets, SAST, IaC, cloud, container, EOL, license, malware, and surface monitoring findings. |
+| `aikido_issues_list` | List, count, summarize, or triage security issues from the Aikido security feed. Use when the user asks about Aikido findings, vulnerabilities, leaked secrets, SAST/IaC/SCA results, cloud or container security issues, or EOL/license/malware alerts surfaced by Aikido. |
 
 # Auto-scan after code generation
 
