@@ -61,6 +61,7 @@ The **Aikido MCP Server** provides the following tools:
 |------|---------|
 | `aikido_login` | Signs the user in through a browser-based flow and caches the auth token. Idempotent — returns "Already signed in" when a valid token exists. Pass `force_reauth: true` to switch accounts or re-authenticate. |
 | `aikido_full_scan` | Runs an Aikido SAST, IaC and Secrets scan locally on provided code files. |
+| `aikido_issues_list` | List, count, summarize, or triage security issues from the Aikido security feed. Use when the user asks about Aikido findings, vulnerabilities, leaked secrets, SAST/IaC/SCA results, cloud or container security issues, or EOL/license/malware alerts surfaced by Aikido. |
 
 # Auto-scan after code generation
 
@@ -89,6 +90,85 @@ When scanning the code for security vulnerabilities using the Aikido MCP server:
    - After applying all fixes, run **aikido_full_scan** again to verify that the issues were resolved and no new issues were introduced.
    - **Stopping the loop:** If you can explain why the applied fix is safe (e.g. the fix correctly addresses the finding and the remaining scan output is a false positive or acceptable), you may stop and report to the user. Otherwise, repeat the fix-and-rescan cycle up to 3 attempts; if issues remain after that, report them to the user instead of continuing.
 5. Report the final scan result to the user — confirm all clear or list any unresolved issues with explanation.
+
+# Listing Aikido feed issues
+
+When listing Aikido feed issues:
+
+1. Use **aikido_issues_list** via the **aikido** MCP server.
+2. Call it when the user wants to list, show, count, or summarize Aikido feed issues.
+3. Pass scope fields only when the user (or workspace context) supplies them: `cloud_name`, `repo_name`, `vm_name`, `domain_name`, `container_name`.
+4. Optional `issue_types` (array): `open_source`, `leaked_secret`, `cloud`, `sast`, `iac`, `surface_monitoring`, `malware`, `eol`, `mobile`, `docker_container`, `cloud_instance`, `scm_security`, `license`, `ai_pentest` — e.g. include `leaked_secret` for secrets. Omit when no category filter is needed.
+5. Pagination: use the numeric `page` field only when the user needs more than the first page of results (zero-indexed). Only 25 findings are reported per page. Report to the user if there are more findings on following pages.
+6. Present each issue exactly in this form (increment `#`):
+
+```text
+Issue #1: <issue_title>
+ - Issue type: <issue_type>
+ - Severity: <issue_severity>
+ - Remediation: <issue_remediation>
+```
+
+If the Aikido MCP server is not available or fails, inform the user that the Aikido MCP server is required for Aikido feed issues but is not available, and ask them to complete the onboarding steps above (or re-run **aikido_login**) before retrying.
+
+# Common Workflows
+
+### Workflow 1: Auto-scan code you write or modify
+
+**Goal:** Catch SAST vulnerabilities, exposed secrets, and IaC misconfigurations in code before it ships.
+
+**Steps:**
+
+1. After generating, adding, or modifying any code files, collect all affected file paths.
+2. Read the full content of each affected file.
+3. Run **aikido_full_scan** with all files and their full content (batch into multiple calls to stay within the 50-file limit per request).
+4. If issues are found, explain each one (title, description, severity, file location, line numbers), apply the remediation guidance, and rescan to verify.
+5. Report the final result — confirm all clear or list any unresolved issues with explanation.
+
+**Example:**
+
+```text
+Agent: "I just modified auth/login.js. Running an Aikido scan to check for security issues."
+
+[Uses aikido_full_scan with the affected files and their full content]
+
+Agent: "Aikido flagged a hardcoded secret on line 12. Here's the fix using an
+environment variable, and the rescan now comes back clean."
+```
+
+### Workflow 2: List and triage Aikido feed issues
+
+**Goal:** Review, count, or summarize the open security findings already surfaced by Aikido for the workspace.
+
+**Steps:**
+
+1. Run **aikido_issues_list** when the user wants to list, show, count, or summarize Aikido feed issues.
+2. Pass scope fields only when the user (or workspace context) supplies them: `cloud_name`, `repo_name`, `vm_name`, `domain_name`, `container_name`.
+3. Optionally filter with `issue_types` (array): `open_source`, `leaked_secret`, `cloud`, `sast`, `iac`, `surface_monitoring`, `malware`, `eol`, `mobile`, `docker_container`, `cloud_instance`, `scm_security`, `license`, `ai_pentest` — e.g. include `leaked_secret` for secrets. Omit when no category filter is needed.
+4. For pagination, use the numeric `page` field (zero-indexed) only when the user needs more than the first page. Only 25 findings are reported per page — tell the user if more findings exist on following pages.
+5. Present each issue exactly in this form (increment `#`):
+
+```text
+Issue #1: <issue_title>
+ - Issue type: <issue_type>
+ - Severity: <issue_severity>
+ - Remediation: <issue_remediation>
+```
+
+**Example:**
+
+```text
+User: "Show me the leaked secrets Aikido found in the payments repo."
+
+[Uses aikido_issues_list with repo_name: 'payments' and issue_types: ['leaked_secret']]
+
+Agent: "Issue #1: AWS access key committed to source
+ - Issue type: leaked_secret
+ - Severity: critical
+ - Remediation: Revoke the key and move it to a secret manager..."
+```
+
+If the Aikido MCP server is not available or fails, inform the user that the Aikido MCP server is required for feed issues but is not available, and ask them to complete the onboarding steps above (or re-run **aikido_login**) before retrying.
 
 ## License and support
 
